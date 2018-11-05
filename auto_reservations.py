@@ -11,7 +11,7 @@ os.chdir(r'C:\Users\Victor\automate_reservations\safaris')
 # directs us to the respective folder where the data is stored
 
 list_of_safaris = os.listdir(r'C:\Users\Victor\automate_reservations\safaris')
-test_list_of_safaris = list_of_safaris[:1]									# !!!!!! only for experimenting purposes
+test_list_of_safaris = list_of_safaris[:2]									# !!!!!! only for experimenting purposes
 #list of safaris available for input - used to create safari objects
 
 def get_cell_content(safari_doc_name, row, column):
@@ -121,8 +121,12 @@ class Safari:
 
 
 #----------------------------------------------------------------------------------------
+
+"""
 test_safari = Safari(test_list_of_safaris[0])
 print(test_safari.get_safari_data())
+"""
+
 #----------------------------------------------------------------------------------------
 # LodgeNode will create a node for each day's lodge that we can queue later on
 class LodgeNode:
@@ -164,12 +168,17 @@ class LodgeNode:
 	def get_next_lodges_name(self, add=1):
 		return self.get_cell_content(18 + self.day + add, 5)
 
+	def get_acc_type(self):
+		acc_type = self.get_cell_content(18 + self.day, 8)
+		return acc_type
+
 	def get_value(self):
 		self.value["lodge_name"] = self.get_lodge_name()
 		self.value["contact_person"] = self.get_contact_person()
 		self.value["day_in"] = self.get_day_in()
 		self.value["day_out"] = self.get_day_out()
 		self.value["number_of_days"] = self.get_number_of_days()
+		self.value["acc_type"] = self.get_acc_type()
 		return self.value
 
 	def get_contact_person(self):						#get the contact person's name of that lodge
@@ -213,14 +222,14 @@ class LodgeNode:
 		return self.num_of_days
 #--------------------------------------------------------------------------
 # testing LodgeNode functionality:
-"""
-test_lodge = LodgeNode(1, test_list_of_safaris[0])
-print(test_lodge.get_day_in())
-print(test_lodge.get_day_out())
-"""
+
+#test_lodge = LodgeNode(1, test_list_of_safaris[0])
+#print(test_lodge.get_day_in())
+#print(test_lodge.get_day_out())
 
 
-#print(LodgeNode(1, test_list_of_safaris[0]).get_value())
+
+#print(LodgeNode(1, test_list_of_safaris[1]).get_value())
 #---------------------------------------------------------------------------
 
 
@@ -233,6 +242,7 @@ class Template:
 		self.date_in = lodge_values["day_in"]
 		self.date_out = lodge_values["day_out"]
 		self.num_nights = lodge_values["number_of_days"]
+		self.acc_type = lodge_values["acc_type"]
 
 
 
@@ -248,14 +258,14 @@ date in: {3}
 date out: {4}
 number of nights: {5}
 
-{6} | 7 standard rooms please.
+{6} | 7 {7} please.
 min. 6 - max. 10 persons + 1 guide
 
-Please confirm asap
+Please confirm asap!
 
 Best regards,
 Alina
-		""".format(self.contact_person, self.year, self.tour_name, self.date_in, self.date_out, self.num_nights, self.lodge_name)
+		""".format(self.contact_person, self.year, self.tour_name, self.date_in, self.date_out, self.num_nights, self.lodge_name, self.acc_type)
 
 
 #----------------------------------------------------------------------------------------
