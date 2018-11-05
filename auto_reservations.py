@@ -6,6 +6,7 @@ safari"""
 # --------------------------------------------script begin ---------------------------------------
 import os
 import xlrd
+from docx import Document
 from datetime import datetime, timedelta
 os.chdir(r'C:\Users\Victor\automate_reservations\safaris') 
 # directs us to the respective folder where the data is stored
@@ -46,7 +47,6 @@ class Safari:
 
 	def is_empty(self):
 		return self.size == 0 
-
 	# end of helper functions
 
 	def peek(self):
@@ -152,7 +152,6 @@ class LodgeNode:
 		value = get_cell_content("data_auto_reservations.xlsx", row, column)
 		os.chdir(r'C:\Users\Victor\automate_reservations\safaris')
 		return value
-
 	# helper functions end
 
 
@@ -234,7 +233,7 @@ class LodgeNode:
 
 
 class Template:
-	def __init__(self, lodge_values):
+	def __init__(self, lodge_values, safari):
 		self.contact_person = lodge_values["contact_person"]
 		self.year = safari.year
 		self.tour_name = safari.name
@@ -259,18 +258,20 @@ date out: {4}
 number of nights: {5}
 
 {6} | 7 {7} please.
-min. 6 - max. 10 persons + 1 guide
+min. 6 - max. 10 persons
++ 1 guideroom
 
 Please confirm asap!
 
 Best regards,
 Alina
-		""".format(self.contact_person, self.year, self.tour_name, self.date_in, self.date_out, self.num_nights, self.lodge_name, self.acc_type)
+		""".format(self.contact_person, self.year, self.tour_name, self.date_in, \
+			self.date_out, self.num_nights, self.lodge_name, self.acc_type)
 
 
 #----------------------------------------------------------------------------------------
 
-
+"""
 for i in range(len(test_list_of_safaris)):
 	safari = Safari(test_list_of_safaris[i])
 	safari.enqueue()
@@ -278,7 +279,36 @@ for i in range(len(test_list_of_safaris)):
 		lodge_values = safari.dequeue()
 		email = Template(lodge_values)
 		print(email.template_insert())
-		print("")
-		print("")
-		print("")
+		document = Document()
+		message = document.add_paragraph(email.template_insert())
+		document.save("emails")
+
+		
+		#print("")
+		#print("")
+		#print("")
+
+"""
+def create_documents():
+	for i in range(len(test_list_of_safaris)):
+		safari = Safari(test_list_of_safaris[i])
+		safari.enqueue()
+		name = safari.get_safari_data()["safari_name"].split(" ")
+		safari_name = name[0] + ".docx"
+		os.chdir(r'C:\Users\Victor\automate_reservations\created_reservation_emails')
+		document = Document()
+		document.save(safari_name)
+		os.chdir(r'C:\Users\Victor\automate_reservations\safaris') 
+		for day in range(1, safari.size): # deliberately not "+1" to not print out the last station (windhoek or kathima)
+			lodge_values = safari.dequeue()
+			email = Template(lodge_values, safari)
+			print(email.template_insert())
+			os.chdir(r'C:\Users\Victor\automate_reservations\created_reservation_emails')
+			document = Document(safari_name)
+			document.add_paragraph(email.template_insert())
+			document.add_paragraph("-----------------------------------------------------------------------------")
+			document.save(safari_name)
+			os.chdir(r'C:\Users\Victor\automate_reservations\safaris') 
+
+create_documents()
 
