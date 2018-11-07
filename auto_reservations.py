@@ -12,7 +12,10 @@ os.chdir(r'C:\Users\Victor\automate_reservations\safaris')
 # directs us to the respective folder where the data is stored
 
 list_of_safaris = os.listdir(r'C:\Users\Victor\automate_reservations\safaris')
-test_list_of_safaris = list_of_safaris[:2]									# !!!!!! only for experimenting purposes
+print("Here all given safaris: ")
+print("")
+print(list_of_safaris)
+print("")							# !!!!!! only for experimenting purposes
 #list of safaris available for input - used to create safari objects
 
 def get_cell_content(safari_doc_name, row, column):
@@ -41,6 +44,15 @@ class Safari:
 	# helper functions
 	def get_cell_content(self, row, column):
 		return get_cell_content(self.safari_doc_name, row, column)
+
+	def get_reference_name(self):
+		lst = xlrd.xldate_as_tuple(self.get_cell_content(19, 3), 0)
+		date = datetime(year=int(lst[0]), month=int(lst[1]), day=int(lst[2])).date()
+		year = date.strftime("%y")
+		day = date.strftime("%d")
+		month = date.strftime("%m")
+		reference_name = self.get_cell_content(3, 1).split(" ")[0] + " {0}-{1}.{2}".format(day, month, year)
+		return reference_name
 
 	def get_size(self):
 		return self.size
@@ -109,8 +121,8 @@ class Safari:
 		lst = xlrd.xldate_as_tuple(self.get_cell_content(19, 3), 0)
 		date = datetime(year=int(lst[0]), month=int(lst[1]), day=int(lst[2])).date()
 		self.year = date.strftime("%Y")
-		self.name = self.get_cell_content(3, 1)
 		self.duration = 0
+		self.name = self.get_reference_name()
 		switch = True	
 		while switch:
 			if self.get_cell_content(19 + self.duration, 1) is None:
@@ -121,10 +133,9 @@ class Safari:
 
 
 #----------------------------------------------------------------------------------------
-
 """
 test_safari = Safari(test_list_of_safaris[0])
-print(test_safari.get_safari_data())
+print(test_safari.get_reference_name())
 """
 
 #----------------------------------------------------------------------------------------
@@ -231,7 +242,6 @@ class LodgeNode:
 #print(LodgeNode(1, test_list_of_safaris[1]).get_value())
 #---------------------------------------------------------------------------
 
-
 class Template:
 	def __init__(self, lodge_values, safari):
 		self.contact_person = lodge_values["contact_person"]
@@ -251,9 +261,9 @@ Dear {0},
 
 Please make a reservation for {1}.
 
-Reference name: {2}.
+Reference name: {2}
 
-date in: {3}
+date in:    {3}
 date out: {4}
 number of nights: {5}
 
@@ -261,7 +271,7 @@ number of nights: {5}
 min. 6 - max. 10 persons
 + 1 guideroom
 
-Please confirm asap!
+Please confirm asap with STO rates!
 
 Best regards,
 Alina
@@ -290,25 +300,30 @@ for i in range(len(test_list_of_safaris)):
 
 """
 def create_documents():
-	for i in range(len(test_list_of_safaris)):
-		safari = Safari(test_list_of_safaris[i])
+	for i in range(len(list_of_safaris)):
+		safari = Safari(list_of_safaris[i])
 		safari.enqueue()
-		name = safari.get_safari_data()["safari_name"].split(" ")
-		safari_name = name[0] + ".docx"
+		print("Generating reservations for safari " + str(i +1) + " ...")
+		#print(name)
+		#print(ref)
+		safari_name = safari.get_reference_name() + ".docx"
+		#print(safari_name)
 		os.chdir(r'C:\Users\Victor\automate_reservations\created_reservation_emails')
 		document = Document()
 		document.save(safari_name)
 		os.chdir(r'C:\Users\Victor\automate_reservations\safaris') 
-		for day in range(1, safari.size): # deliberately not "+1" to not print out the last station (windhoek or kathima)
+		for lodge in range(1, safari.size): # deliberately not "+1" to not print out the last station (windhoek or kathima)
 			lodge_values = safari.dequeue()
 			email = Template(lodge_values, safari)
-			print(email.template_insert())
+			#print(email.template_insert())
+			print("Creating Document for lodge " + str(lodge))
 			os.chdir(r'C:\Users\Victor\automate_reservations\created_reservation_emails')
 			document = Document(safari_name)
 			document.add_paragraph(email.template_insert())
 			document.add_paragraph("-----------------------------------------------------------------------------")
 			document.save(safari_name)
 			os.chdir(r'C:\Users\Victor\automate_reservations\safaris') 
-
+		print("")
+		print("")
 create_documents()
 
