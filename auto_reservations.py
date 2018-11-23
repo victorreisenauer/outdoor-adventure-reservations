@@ -230,6 +230,7 @@ class LodgeNode:
 
 	def get_number_of_days(self):						#get the number_of_days we stayed at the lodge
 		return self.num_of_days
+
 #--------------------------------------------------------------------------
 # testing LodgeNode functionality:
 
@@ -252,7 +253,11 @@ class Template:
 		self.date_out = lodge_values["day_out"]
 		self.num_nights = lodge_values["number_of_days"]
 		self.acc_type = lodge_values["acc_type"]
-
+		if self.acc_type == "Campground":
+			self.rooms = ""
+		else:
+			self.rooms = "7"
+			
 
 
 	def template_insert(self):
@@ -263,20 +268,20 @@ Please make a reservation for {1}.
 
 Reference name: {2}
 
+{6} | {rooms} {7} please.
+min. 6 - max. 10 persons
++ 1 guide
+
 date in:    {3}
 date out: {4}
 number of nights: {5}
-
-{6} | 7 {7} please.
-min. 6 - max. 10 persons
-+ 1 guideroom
 
 Please confirm asap with STO rates!
 
 Best regards,
 Alina
 		""".format(self.contact_person, self.year, self.tour_name, self.date_in, \
-			self.date_out, self.num_nights, self.lodge_name, self.acc_type)
+			self.date_out, self.num_nights, self.lodge_name, self.acc_type, rooms=self.rooms)
 
 
 #----------------------------------------------------------------------------------------
@@ -303,7 +308,7 @@ def create_documents():
 	for i in range(len(list_of_safaris)):
 		safari = Safari(list_of_safaris[i])
 		safari.enqueue()
-		print("Generating reservations for safari " + str(i +1) + " ...")
+		print("Generating document for safari " + str(i +1) + " ...")
 		#print(name)
 		#print(ref)
 		safari_name = safari.get_reference_name() + ".docx"
@@ -316,7 +321,7 @@ def create_documents():
 			lodge_values = safari.dequeue()
 			email = Template(lodge_values, safari)
 			#print(email.template_insert())
-			print("Creating Document for lodge " + str(lodge))
+			print("Creating reservation for lodge " + str(lodge))
 			os.chdir(r'C:\Users\Victor\automate_reservations\created_reservation_emails')
 			document = Document(safari_name)
 			document.add_paragraph(email.template_insert())
